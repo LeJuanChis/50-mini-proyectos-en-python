@@ -119,19 +119,35 @@ class Piece(object):
         self.rotation = 0
         pass
 
+def create_grid(locked_pos = {}):
+      grid = [[(0,0,0) for x in range(10)] for x in range(20)]
+      for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                  if (j, i) in locked_pos:
+                        d = locked_pos[(j, i)]
+                        grid[i][j] = d
+      return grid
+
 
 def get_shape():
     return Piece(5, 0, random.choice(shapes))
 
 
 def init():
+    create_grid()
     pygame.init()
     global SCREEN
-    global WINDOW_WIDTH, WINDOW_HEIGHT
+    global WINDOW_WIDTH, WINDOW_HEIGHT, PLAY_WIDTH, PLAY_HEIGHT, BLOCK_SIZE
     global COLORWHITE, COLORBLUE
+    global TOP_LEFT_X, TOP_LEFT_Y
 
     # configuracion de la pantalla
-    WINDOW_WIDTH, WINDOW_HEIGHT = 440, 600
+    WINDOW_WIDTH, WINDOW_HEIGHT = 1000, 600
+    PLAY_WIDTH, PLAY_HEIGHT = 400, 800
+    BLOCK_SIZE = 40
+
+    TOP_LEFT_X = (WINDOW_WIDTH - PLAY_WIDTH) // 2 #usamos el "//" para que nos retorne un int
+    TOP_LEFT_Y = (WINDOW_HEIGHT - PLAY_HEIGHT)
     COLORWHITE = (200, 200, 200)
     COLORBLUE = (0, 0, 128)
 
@@ -176,7 +192,14 @@ def drawWindow(screen):
 
     drawGrid()
 
-def drawGrid():
+def drawGrid(screen):
+    screen.fill((0,0,0))
+    pygame.font.init() #iniciamos los fonts de pygame
+    font = pygame.font.SysFont('comicsans', 60)
+    label = font.render('Juega tetris', 1, (255, 255, 255))
+
+    screen.blit(label, (TOP_LEFT_X + PLAY_WIDTH // 2 - (label.get_width()), 30))
+
     blockSize = 40
     for x in range(0, round(WINDOW_WIDTH * 0.7), blockSize):
         for y in range(0, WINDOW_HEIGHT, blockSize):
