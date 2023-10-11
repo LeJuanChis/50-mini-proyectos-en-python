@@ -196,6 +196,7 @@ def get_shape():
     return Piece(5, 0, random.choice(shapes))
 
 
+#este es un comentario prueba
 def draw_text_middle(text, size, color, surface):
     font = pygame.font.SysFont('comicsans', size, bold=True)
     label = font.render(text, 1, color)
