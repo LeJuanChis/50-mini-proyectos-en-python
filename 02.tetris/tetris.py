@@ -233,11 +233,14 @@ def init(screen):
             next_piece = get_shape()
             change_piece = False
 
+
         if check_lost(locked_positions):
             run = False
             pygame.display.quit()
 
         drawWindow(screen, grid)
+        draw_next_piece(next_piece, screen)
+        pygame.display.update()
 
 
 def drawGrid(screen, grid):
@@ -266,7 +269,7 @@ def drawWindow(screen, grid):
 
 
     drawGrid(screen, grid)
-    pygame.display.update()
+    #pygame.display.update()
 
 
 def valid_space(current_piece, grid):
@@ -289,6 +292,25 @@ def check_lost(positions):
 
     return False
 
+def draw_next_piece(shape, screen):
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Next Shape', 1, (255, 255, 255))
+
+    sx = TOP_LEFT_X + PLAY_WIDTH + 50
+    sy = TOP_LEFT_Y + PLAY_HEIGHT/2 - 100
+
+    format = shape.shape[shape.rotation % len(shape.shape)]
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                pygame.draw.rect(screen, shape.color, (sx + j*BLOCK_SIZE, sy + i*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 0)
+
+    screen.blit(label, (sx + 10, sy - 30))
+
+def clear_rows(grid, locked_pos):
+    pass
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Tetris game')
