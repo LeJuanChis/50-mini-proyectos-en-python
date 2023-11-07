@@ -114,7 +114,7 @@ global COLORWHITE, COLORBLUE
 global TOP_LEFT_X, TOP_LEFT_Y
 
 # configuracion de la pantalla
-WINDOW_WIDTH, WINDOW_HEIGHT = 1000, 600
+WINDOW_WIDTH, WINDOW_HEIGHT = 1000, 700
 PLAY_WIDTH, PLAY_HEIGHT = 400, 800
 BLOCK_SIZE = 40
 
@@ -126,7 +126,18 @@ COLORBLUE = (0, 0, 128)
 
 # controlador principal
 def main_controller(screen):
-    init(screen)
+    run = True
+    while run:
+        screen.fill((0,0,0))
+        draw_text_middle(screen, 'Preciona cualquier tecla para iniciar', 60, (255, 255, 255))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if event.type == pygame.KEYDOWN:
+                init(screen)
+    pygame.quit()
 
 # clase para la estructura
 
@@ -171,8 +182,6 @@ def get_shape():
 
 
 def init(screen):
-
-
     locked_positions = {}
     grid = create_grid(locked_positions)
     change_piece = False
@@ -181,14 +190,21 @@ def init(screen):
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
-
     fall_speed = 0.27
-
+    level_time = 0
+    score = 0
 
     while run:
         grid = create_grid(locked_positions)
         fall_time += clock.get_rawtime()
+        level_time += clock.get_rawtime()
         clock.tick()
+
+        #subir la velocidad cada 10 segundos segundos
+        if level_time/1000 > 10:
+            level_time = 0
+            if fall_speed > 0.15:
+                fall_speed -= 0.005
 
         if fall_time / 1000 > fall_speed:
             fall_time = 0
@@ -200,6 +216,7 @@ def init(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.display.quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
@@ -232,15 +249,19 @@ def init(screen):
             current_piece = next_piece
             next_piece = get_shape()
             change_piece = False
+            score += clear_rows(grid, locked_positions) * 20
 
-
-        if check_lost(locked_positions):
-            run = False
-            pygame.display.quit()
-
-        drawWindow(screen, grid)
+        drawWindow(screen, grid, score)
         draw_next_piece(next_piece, screen)
         pygame.display.update()
+
+        if check_lost(locked_positions):
+            draw_text_middle(screen, "Has perdido, intenta de nuevo", 80, (255, 255, 255))
+            pygame.display.update()
+            pygame.time.delay(1500)
+            run = False
+            pygame.display.quit()
+        
 
 
 def drawGrid(screen, grid):
@@ -252,8 +273,15 @@ def drawGrid(screen, grid):
         for j in range(len(grid[i])):
             pygame.draw.line(screen, (128, 128, 128), (sx + j * BLOCK_SIZE, sy), (sx + j * BLOCK_SIZE, sy + PLAY_HEIGHT))
 
+def draw_text_middle(screen, text, size, color):
+    pygame.font.init()
+    font = pygame.font.SysFont("comicsans", size, bold=True)
+    label = font.render(text, 1, color)
 
-def drawWindow(screen, grid):
+    screen.blit(label, (TOP_LEFT_X + PLAY_WIDTH / 2 - (label.get_width()/2), TOP_LEFT_Y + PLAY_HEIGHT / 2 - label.get_height() / 2))
+
+
+def drawWindow(screen, grid, score=0):
     screen.fill((0,0,0))
     pygame.font.init()  # iniciamos los fonts de pygame
     font = pygame.font.SysFont('comicsans', 60)
@@ -261,6 +289,15 @@ def drawWindow(screen, grid):
 
     screen.blit(label, (TOP_LEFT_X + PLAY_WIDTH //
                 2 - (label.get_width()), 30))
+
+    
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Score: ' + str(score), 1, (255, 255, 255))
+
+    sx = TOP_LEFT_X + PLAY_WIDTH + 50
+    sy = TOP_LEFT_Y + PLAY_HEIGHT/2 - 100
+
+    screen.blit(label, (sx + 10, sy + 200))
     for i in range(len(grid)):
         for j in range(len(grid[i])):
             pygame.draw.rect(screen, grid[i][j], (TOP_LEFT_X + j * BLOCK_SIZE,
@@ -273,7 +310,7 @@ def drawWindow(screen, grid):
 
 
 def valid_space(current_piece, grid):
-    accepted_pos = [[(j, i) for j in range(10)] for i in range(20)]
+    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
     accepted_pos = [ j for sub in accepted_pos for j in sub]
 
     formatted = convert_shape_format(current_piece)
@@ -310,7 +347,26 @@ def draw_next_piece(shape, screen):
     screen.blit(label, (sx + 10, sy - 30))
 
 def clear_rows(grid, locked_pos):
-    pass
+    inc = 0
+    for i in range(len(grid)-1, -1, -1):
+        row = grid[i]
+        if(0, 0, 0) not in row:
+            inc += 1
+            ind = i
+            for j in range(len(row)):
+                try:
+                    del locked_pos[(j, i)]
+                except:
+                    continue
+
+    if inc > 0:
+        for key in sorted(list(locked_pos), key=lambda x: x[1])[::-1]:
+            x, y = key
+            if y < ind:
+                newKey = (x, y + inc)
+                locked_pos[newKey] = locked_pos.pop(key)
+
+    return inc
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Tetris game')
