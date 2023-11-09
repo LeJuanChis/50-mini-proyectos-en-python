@@ -190,7 +190,7 @@ def init(screen):
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
-    fall_speed = 0.27
+    fall_speed = 0.2
     level_time = 0
     score = 0
 
@@ -201,10 +201,7 @@ def init(screen):
         clock.tick()
 
         #subir la velocidad cada 10 segundos segundos
-        if level_time/1000 > 10:
-            level_time = 0
-            if fall_speed > 0.15:
-                fall_speed -= 0.005
+
 
         if fall_time / 1000 > fall_speed:
             fall_time = 0
@@ -261,7 +258,7 @@ def init(screen):
             pygame.time.delay(1500)
             run = False
             pygame.display.quit()
-        
+
 
 
 def drawGrid(screen, grid):
@@ -290,7 +287,7 @@ def drawWindow(screen, grid, score=0):
     screen.blit(label, (TOP_LEFT_X + PLAY_WIDTH //
                 2 - (label.get_width()), 30))
 
-    
+
     font = pygame.font.SysFont('comicsans', 30)
     label = font.render('Score: ' + str(score), 1, (255, 255, 255))
 
