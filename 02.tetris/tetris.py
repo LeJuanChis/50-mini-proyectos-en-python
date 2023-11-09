@@ -129,7 +129,7 @@ def main_controller(screen):
     run = True
     while run:
         screen.fill((0,0,0))
-        draw_text_middle(screen, 'Preciona cualquier tecla para iniciar', 60, (255, 255, 255))
+        draw_text_middle(screen, 'Presiona cualquier tecla para iniciar', 60, (255, 255, 255))
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
